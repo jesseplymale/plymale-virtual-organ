@@ -1,0 +1,38 @@
+---
+- name: Prep Raspberry Pi
+  hosts: localhost
+  tasks:
+  # - debug:
+  #     msg: "{{ ansible_facts }}"
+
+  - name: Copy additional bashrc commands
+    ansible.builtin.copy:
+      src: dot_bashrc_extras.sh
+      dest: "{{ ansible_facts['user_dir'] }}/.bashrc_extras"
+      mode: u=rw,go=r
+  
+  - name: Make it so that additional bash commands are executed
+    ansible.builtin.lineinfile:
+      path: "{{ ansible_facts['user_dir'] }}/.bashrc"
+      line: source ~/.bashrc_extras
+
+  - name: Increase size of bash history
+    ansible.builtin.lineinfile:
+      path: "{{ ansible_facts['user_dir'] }}/.bashrc"
+      regexp: "^HISTSIZE="
+      line: HISTSIZE=1000000
+
+  - name: Increase size of bash history file
+    ansible.builtin.lineinfile:
+      path: "{{ ansible_facts['user_dir'] }}/.bashrc"
+      regexp: "^HISTFILESIZE="
+      line: HISTFILESIZE=2000000
+
+  - name: Disable internal RPi audio when using external DAC
+    become: yes
+    ansible.builtin.lineinfile:
+      path: /boot/config.txt
+      regexp: '^(dtparam=audio=on)$'
+      line: '# \1'
+      backrefs: yes
+    when: using_external_dac
