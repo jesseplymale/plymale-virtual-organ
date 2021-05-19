@@ -5,34 +5,69 @@
   # - debug:
   #     msg: "{{ ansible_facts }}"
 
-  - name: Copy additional bashrc commands
-    ansible.builtin.copy:
-      src: dot_bashrc_extras.sh
-      dest: "{{ ansible_facts['user_dir'] }}/.bashrc_extras"
-      mode: u=rw,go=r
-  
-  - name: Make it so that additional bash commands are executed
-    ansible.builtin.lineinfile:
-      path: "{{ ansible_facts['user_dir'] }}/.bashrc"
-      line: source ~/.bashrc_extras
+  # - name: Copy additional bashrc commands
+  #   ansible.builtin.copy:
+  #     src: dot_bashrc_extras.sh
+  #     dest: "{{ ansible_facts['user_dir'] }}/.bashrc_extras"
+  #     mode: u=rw,go=r
 
-  - name: Increase size of bash history
-    ansible.builtin.lineinfile:
-      path: "{{ ansible_facts['user_dir'] }}/.bashrc"
-      regexp: "^HISTSIZE="
-      line: HISTSIZE=1000000
+  # - name: Make it so that additional bash commands are executed
+  #   ansible.builtin.lineinfile:
+  #     path: "{{ ansible_facts['user_dir'] }}/.bashrc"
+  #     line: source ~/.bashrc_extras
 
-  - name: Increase size of bash history file
-    ansible.builtin.lineinfile:
-      path: "{{ ansible_facts['user_dir'] }}/.bashrc"
-      regexp: "^HISTFILESIZE="
-      line: HISTFILESIZE=2000000
+  # - name: Increase size of bash history
+  #   ansible.builtin.lineinfile:
+  #     path: "{{ ansible_facts['user_dir'] }}/.bashrc"
+  #     regexp: "^HISTSIZE="
+  #     line: HISTSIZE=1000000
 
-  - name: Disable internal RPi audio when using external DAC
-    become: yes
-    ansible.builtin.lineinfile:
-      path: /boot/config.txt
-      regexp: '^(dtparam=audio=on)$'
-      line: '# \1'
-      backrefs: yes
-    when: using_external_dac
+  # - name: Increase size of bash history file
+  #   ansible.builtin.lineinfile:
+  #     path: "{{ ansible_facts['user_dir'] }}/.bashrc"
+  #     regexp: "^HISTFILESIZE="
+  #     line: HISTFILESIZE=2000000
+
+  # - name: Disable internal RPi audio when using external DAC
+  #   become: true
+  #   ansible.builtin.lineinfile:
+  #     path: /boot/config.txt
+  #     regexp: '^(dtparam=audio=on)$'
+  #     line: '# \1'
+  #     backrefs: true
+  #   when: using_external_dac
+
+  # - name: Install Aptitude (which Ansible likes using more than apt)
+  #   become: true
+  #   ansible.builtin.apt:
+  #     name: aptitude
+  #     state: latest
+  #     update_cache: true
+
+  # - name: Install Aptitude (which Ansible likes using more than apt)
+  #   become: true
+  #   ansible.builtin.apt:
+  #     name: aptitude
+  #     state: present
+  #     update_cache: true
+
+  - name: Install other software we want
+    become: true
+    ansible.builtin.apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - vim
+      # Defaults to openjdk-11 currently
+      - default-jdk
+      - fluidsynth
+      - xscreensaver
+      # So we can install from snaps
+      - snapd
+      # So we can unarchive jorgan dispositions, etc
+      - p7zip-full
+
+  # - name: Install Snap packages
+  #   become: true
+  #   community.general.snap:
+  #     name: p7zip-desktop

@@ -15,3 +15,6 @@ pathmunge () {
 
 # Add extra directories to path
 pathmunge ${HOME}/.local/bin
+
+# So we can see snap binaries later
+pathmunge /snap/bin
