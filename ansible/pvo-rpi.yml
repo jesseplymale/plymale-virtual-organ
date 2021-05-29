@@ -51,21 +51,36 @@
   #     state: present
   #     update_cache: true
 
-  - name: Install other software we want
-    become: true
-    ansible.builtin.apt:
-      name: "{{ item }}"
+#   - name: Install other software we want
+#     become: true
+#     ansible.builtin.apt:
+#       name: "{{ item }}"
+#       state: present
+#     with_items:
+#       - vim
+#       # Defaults to openjdk-11 currently
+#       - default-jdk
+#       - fluidsynth
+#       - xscreensaver
+#       # So we can install from snaps
+#       - snapd
+#       # So we can unarchive jorgan dispositions, etc
+#       - p7zip-full
+#       - xclip
+
+  - name: Create SSH Directory
+    file:
+      path: "{{ ansible_facts['user_dir'] }}/.ssh"
+      mode: u=rwx,go=
+      state: directory
+
+  - name: generate SSH key 
+    community.crypto.openssh_keypair:
+      path: "~/.ssh/id_ed25519"
+      type: ed25519
+      size: 4096
       state: present
-    with_items:
-      - vim
-      # Defaults to openjdk-11 currently
-      - default-jdk
-      - fluidsynth
-      - xscreensaver
-      # So we can install from snaps
-      - snapd
-      # So we can unarchive jorgan dispositions, etc
-      - p7zip-full
+      force: no
 
   # - name: Install Snap packages
   #   become: true

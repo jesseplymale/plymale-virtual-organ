@@ -17,6 +17,8 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
 // This is how often (how many milliseconds) we will poll the switches
 Metro pin_poll_interval = Metro(1);
 
+Metro pot_poll_interval = Metro(250);
+
 // This is the array of Bounce buttons. To be able to map more
 // quickly from the pin index
 Bounce debouncers[LENGTH_PIN_NOTES];
@@ -66,6 +68,20 @@ void setup() {
     debouncer->interval(DEBOUNCE_INTERVAL_MILLIS);
   }
 
+  // Set up potentiometers
+  for (unsigned char i=0; i<LENGTH_POT_NUMBERS; i++) {
+    const unsigned char *pot_number = pot_numbers[i];
+    unsigned char pot = pot_number[0];
+    unsigned char number = pot_number[1];
+    if (ENABLE_DEBUGGING) {
+      Serial.print("Setting up pot=");
+      Serial.print(pot);
+      Serial.print(" with number=");
+      Serial.println(number);
+    }
+    pinMode(pot, INPUT);
+  }
+
   delay(100);
   
   for (int i=0; i<LENGTH_PIN_NOTES; i++) {
@@ -112,6 +128,23 @@ void note_changed(unsigned char note_number, int is_note_on) {
 }
 
 /**
+ * Listen to the potentiometers and send midi messages as needed
+ */
+void handle_pots() {
+  // Break out if we have checked too recently
+  if (pot_poll_interval.check() != 1) {
+    return;
+  }
+
+  if (ENABLE_DEBUGGING) {
+    int val = analogRead(14);
+    Serial.print("Analog 14 is: ");
+    Serial.println(val);
+  }
+  
+}
+
+/**
  * Listen to the pins and see what notes have been pressed, if any.
  */
 void handle_notes() {
@@ -152,4 +185,5 @@ void handle_notes() {
 
 void loop() {
   handle_notes();
+  handle_pots();
 }

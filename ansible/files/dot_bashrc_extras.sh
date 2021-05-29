@@ -18,3 +18,7 @@ pathmunge ${HOME}/.local/bin
 
 # So we can see snap binaries later
 pathmunge /snap/bin
+
+# Make vim the default editor
+export VISUAL=vim
+export EDITOR="$VISUAL"

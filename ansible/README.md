@@ -30,7 +30,7 @@ python3 -m pip install "ansible-lint[community,yamllint]"
 # will add a bashrc extras file that will put it into the path in the future
 export PATH=${PATH}:${HOME}/.local/bin
 # Install prerequisites for the playbook
-ansible-galaxy collection install community.general
+ansible-galaxy collection install community.general community.crypto
 # Run the playbook
 ansible-playbook --inventory inventory.yml pvo-rpi.yml
 

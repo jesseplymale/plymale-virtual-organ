@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 // Enable debugging
-#define ENABLE_DEBUGGING 0
+#define ENABLE_DEBUGGING 1
 
 // Some behaviors only make sense on Teensy
 #define IS_TEENSY 1
@@ -37,10 +37,19 @@
 
 #define MAX_PINS_ARDUINO 42
 
+#define LENGTH_POT_NUMBERS 4
+
+const unsigned char pot_numbers[LENGTH_POT_NUMBERS][2] = {
+  { 14, 0 }, // First pot
+  { 15, 1 },
+  { 16, 2 },
+  { 17, 3 }
+};
+
 // Array of all the notes we will have.
 // Each will have its own pin and will generate the given midi number
 const unsigned char pin_notes[LENGTH_PIN_NOTES][2] = {
-  // First row of pins, down the upper left side of the board
+  // First 10 pins, down the upper left side of the board
   {  2, 36 }, // C2
   {  3, 37 }, // C#2
   {  4, 38 }, // D2
@@ -49,33 +58,33 @@ const unsigned char pin_notes[LENGTH_PIN_NOTES][2] = {
   {  7, 41 }, // F2
   {  8, 42 }, // F#2
   {  9, 43 }, // G2
-  // Second row of pins, up the upper right side of the board
-  {  16, 44 }, // G#2
-  {  17, 45 }, // A2
-  {  18, 46 }, // A#2
-  {  19, 47 }, // B2
-  {  20, 48 }, // C3
-  {  21, 49 }, // C#3
-  {  22, 50 }, // D3
-  {  23, 51 }, // D#3
-  // Third row of pins, down the lower left side of the board
-  {  24, 52 }, // E3
-  {  25, 53 }, // F3
-  {  26, 54 }, // F#3
-  {  27, 55 }, // G3
-  {  28, 56 }, // G#3
-  {  29, 57 }, // A3
-  {  30, 58 }, // A#3
-  {  31, 59 }, // B3
-  // Fourth row of pins, up the lower right side of the board
-  {  34, 60 }, // C4
-  {  35, 61 }, // C#4
-  {  36, 62 }, // D4
-  {  37, 63 }, // D#4
-  {  38, 64 }, // E4
-  {  39, 65 }, // F4
-  {  40, 66 }, // F#4
-  {  41, 67 }, // G4
+  {  10, 44 }, // G#2
+  {  11, 45 }, // A2
+  // Second row of 5 pins, up the upper right side of the board
+  {  19, 46 }, // A#2
+  {  20, 47 }, // B2
+  {  21, 48 }, // C3
+  {  22, 49 }, // C#3
+  {  23, 50 }, // D3
+  // Third row of 9 pins, down the lower left side of the board
+  {  24, 51 }, // D#3
+  {  25, 52 }, // E3
+  {  26, 53 }, // F3
+  {  27, 54 }, // F#3
+  {  28, 55 }, // G3
+  {  29, 56 }, // G#3
+  {  30, 57 }, // A3
+  {  31, 58 }, // A#3
+  {  32, 59 }, // B3
+  // Fourth row of 8 pins, up the lower right side of the board
+  {  33, 60 }, // C4
+  {  34, 61 }, // C#4
+  {  35, 62 }, // D4
+  {  36, 63 }, // D#4
+  {  37, 64 }, // E4
+  {  38, 65 }, // F4
+  {  39, 66 }, // F#4
+  {  40, 67 }, // G4
 };
 
 #endif
