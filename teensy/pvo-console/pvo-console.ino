@@ -10,6 +10,12 @@
 
 #include <MIDI.h>
 #include "config.h"
+#include <Keypad.h>
+#include <Metro.h>
+
+//// Poll intervals
+//Metro midi_poll_interval = Metro(1);
+Metro keypad_poll_interval = Metro(20);
 
 typedef midi::MidiInterface<midi::SerialMIDI<HardwareSerial>> HardwareSerialMidiInterface;
 
@@ -28,6 +34,9 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial8, MIDI8);
 HardwareSerialMidiInterface *midi_interfaces[LENGTH_MIDI_INTERFACES] = {
   &MIDI1, &MIDI2, &MIDI3, &MIDI4, &MIDI5, &MIDI6, &MIDI7, &MIDI8
 };
+
+// Set up the keypad
+Keypad kpd = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 // A variable to know how long the LED has been turned on
 elapsedMillis led_on_millis;
@@ -50,6 +59,10 @@ void setup() {
     // Note: Display A doesn't use this pin when debugging
     pinMode(DEBUG_LED_PIN, OUTPUT); // LED pin
   }
+
+  // Configure the keypad
+  kpd.setDebounceTime(DEBOUNCE_INTERVAL_MILLIS*20);
+  kpd.setHoldTime(HOLD_INTERVAL_MILLIS);
 
   // Enable the MIDI serial ports 
   for (int i=0; i<LENGTH_MIDI_INTERFACES; i++) {
@@ -86,6 +99,11 @@ void show_midi_activity(int is_activity) {
  * Loop through the MIDI devices and do all the processing
  */
 int process_midi() {
+//  // Break out if we have checked too recently
+//  if (midi_poll_interval.check() != 1) {
+//    return;
+//  }
+
   int is_activity = 0;
 
   // Enable the MIDI serial ports 
@@ -184,13 +202,76 @@ int process_midi() {
   return is_activity;
 }
 
+void process_keypad2() {
+  if (keypad_poll_interval.check() != 1) {
+    return;
+  }
+  char key = kpd.getKey();
+  
+  if (key != NO_KEY){
+    Serial.println(key);
+  } 
+}
+
+void process_keypad() {
+  if (keypad_poll_interval.check() != 1) {
+    return;
+  }
+  
+  // Fills kpd.key[ ] array with up-to LIST_MAX (currently 10) active keys.
+  // Returns true if there are ANY active keys.
+  if (!kpd.getKeys()) {
+    return;
+  }
+
+  // Scan the whole key list, since we know there is an active key
+  for (int i=0; i<LIST_MAX; i++) {
+//    Key *current_key = &kpd.key[i];
+ 
+    // Only find keys that have changed state.
+    if ( kpd.key[i].stateChanged ) {
+      // The name of the key
+      char current_key_name = kpd.key[i].kchar;
+//
+//      if (current_key_name == 0 || current_key_name == 99 || current_key_name == 100 || current_key_name == 104 || current_key_name == 105) {
+//        continue;
+//      }
+      
+      // Report active key state : IDLE, PRESSED, HOLD, or RELEASED
+      switch (kpd.key[i].kstate) {
+        case PRESSED:
+          Serial.print("pressed: ");
+          Serial.println(current_key_name, DEC);
+          break;
+        case RELEASED:
+          Serial.print("released: ");
+          Serial.println(current_key_name, DEC);
+          break;
+        case HOLD:
+          Serial.print("hold: ");
+          Serial.println(current_key_name, DEC);
+          break;
+        case IDLE:
+          Serial.print("idle: ");
+          Serial.println(current_key_name, DEC);
+          break;
+        default:
+          // fall through
+          break;
+      }
+    }
+  }
+}
+
 /**
  * Main program loop
  */
 void loop() {
-  int is_activity = process_midi();
+//  int is_activity = process_midi();
+
+  process_keypad();
 
   if (ENABLE_DEBUGGING) {
-    show_midi_activity(is_activity);
+//    show_midi_activity(is_activity);
   }
 }
