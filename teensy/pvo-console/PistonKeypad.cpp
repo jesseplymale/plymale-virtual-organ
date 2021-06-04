@@ -41,6 +41,10 @@ void PistonKeypad::pin_mode(byte pinNum, byte mode) {
   // INPUT, and right before the next row's INPUT is being changed to an
   // OUTPUT for scanning. This is where we need to put a delay.
   if (mode == INPUT) {
+    // It doesn't make sense to me why setting this to INPUT_PULLDOWN works.
+    // I figure it would actually cause it *not* to work, since the other
+    // side of the matrix is set to INPUT_PULLUP. But when I put INPUT here,
+    // it doesn't work. Perhaps something about capacitance in the circuit?
     Keypad::pin_mode(pinNum, INPUT_PULLDOWN);
     // Put in the delay.
     delayMicroseconds(100);

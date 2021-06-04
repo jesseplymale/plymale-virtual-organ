@@ -1,14 +1,7 @@
 
-/* Create a "class compliant " USB to 3 MIDI IN and 3 MIDI OUT interface.
-
-   MIDI receive (6N138 optocoupler) input circuit and series resistor
-   outputs need to be connected to Serial1, Serial2 and Serial3.
-
-   You must select MIDIx4 from the "Tools > USB Type" menu
-
-   This example code is in the public domain.
-*/
-
+/**
+ * Handles midi routing for four MIDI keyboards, plus a 9x12 matrix of piston buttons.
+ */
 #include <MIDI.h>
 #include "config.h"
 #include "PistonKeypad.h"
@@ -130,7 +123,10 @@ int process_midi() {
       }
   
       // forward the message to USB MIDI virtual cable #0
-      if (type != midi::SystemExclusive) {
+      if (type == midi::SystemExclusive) {
+        // We discard ActiveSensing
+        ;
+      } else if (type != midi::SystemExclusive) {
         // Whatever comes to the first hardware serial port (number 1) goes 
         // to the first cable (number 0), and so forth. The output channel is always
         // set to USB_MIDI_CHANNEL (1), instead of using the channel that the keyboard
@@ -185,8 +181,10 @@ int process_midi() {
     // Get the corresponding midi interface to the incoming cable
     HardwareSerialMidiInterface *midi_interface = midi_interfaces[cable];
 
-    // forward this message to 1 of the 3 Serial MIDI OUT ports
-    if (type != usbMIDI.SystemExclusive) {
+    if (type == usbMIDI.ActiveSensing) {
+      // We discard ActiveSensing
+      ;
+    } else if (type != usbMIDI.SystemExclusive) {
       // Normal messages, first we must convert usbMIDI's type (an ordinary
       // byte) to the MIDI library's special MidiType.
       midi::MidiType mtype = (midi::MidiType)type;
@@ -203,23 +201,10 @@ int process_midi() {
   return is_activity;
 }
 
-void process_keypad2() {
-//  if (keypad_poll_interval.check() != 1) {
-//    return;
-//  }
-  char key = kpd.getKey();
-  
-  if (key != NO_KEY){
-    Serial.println(key);
-  } 
-}
-
 void process_keypad() {
 //  if (keypad_poll_interval.check() != 1) {
 //    return;
 //  }
-  
-  // Fills kpd.key[ ] array with up-to LIST_MAX (currently 10) active keys.
   // Returns true if there are ANY active keys.
   if (!kpd.getKeys()) {
     return;
@@ -227,38 +212,65 @@ void process_keypad() {
 
   // Scan the whole key list, since we know there is an active key
   for (int i=0; i<LIST_MAX; i++) {
-//    Key *current_key = &kpd.key[i];
+    Key *current_key = &kpd.key[i];
  
     // Only find keys that have changed state.
-    if ( kpd.key[i].stateChanged ) {
+    if ( current_key->stateChanged ) {
       // The name of the key
-      char current_key_name = kpd.key[i].kchar;
-//
-//      if (current_key_name == 0 || current_key_name == 99 || current_key_name == 100 || current_key_name == 104 || current_key_name == 105) {
-//        continue;
-//      }
-      
-      // Report active key state : IDLE, PRESSED, HOLD, or RELEASED
-      switch (kpd.key[i].kstate) {
-        case PRESSED:
-          Serial.print("pressed: ");
-          Serial.println(current_key_name, DEC);
-          break;
-        case RELEASED:
-          Serial.print("released: ");
-          Serial.println(current_key_name, DEC);
-          break;
-        case HOLD:
-          Serial.print("hold: ");
-          Serial.println(current_key_name, DEC);
-          break;
-        case IDLE:
-          Serial.print("idle: ");
-          Serial.println(current_key_name, DEC);
-          break;
-        default:
-          // fall through
-          break;
+      char current_key_name = current_key->kchar;
+      KeyState current_key_state = current_key->kstate;
+
+      // On USB cables, we will send out the message on channel 1
+      midi::Channel usb_output_midi_channel = 1;
+
+      // The midi message to send depends on if it's a button
+      // which needs to be held down.
+      if (current_key_name == SET_BUTTON_NUMBER) {
+        // We need to send this as as a CC since it has to show when
+        // it is both pressed and released
+        if (current_key_state == PRESSED || current_key_state == RELEASED) {
+          char button_cc_value = current_key_state == PRESSED ? 127 : 0;
+          
+          // Send the message over the PISTON_MSG_CABLE_NUM virtual MIDI cable on USB
+          usbMIDI.sendControlChange(current_key_name, button_cc_value,
+            usb_output_midi_channel, PISTON_MSG_CABLE_NUM);
+          
+          // Use MIDI8 as OUTPUT_MIDI_CONCATENATED_PORT.
+          // Send button messages on PISTON_MSG_CONCAT_PORT_CHANNEL
+          MIDI8.sendControlChange(current_key_name, button_cc_value, PISTON_MSG_CONCAT_PORT_CHANNEL);
+        }
+ 
+      } else {
+        // Since this is simply a momentary button, we will send it as a program change
+        // when the button is first pushed
+        if (current_key_state == PRESSED) {
+          usbMIDI.sendProgramChange(current_key_name, usb_output_midi_channel, PISTON_MSG_CABLE_NUM);
+          MIDI8.sendProgramChange(current_key_name, PISTON_MSG_CONCAT_PORT_CHANNEL);
+        }
+      }
+
+      if (ENABLE_DEBUGGING) {
+        switch (current_key_state) {
+          case PRESSED:
+            Serial.print("pressed: ");
+            Serial.println(current_key_name, DEC);
+            break;
+          case RELEASED:
+            Serial.print("released: ");
+            Serial.println(current_key_name, DEC);
+            break;
+          case HOLD:
+            Serial.print("hold: ");
+            Serial.println(current_key_name, DEC);
+            break;
+          case IDLE:
+            Serial.print("idle: ");
+            Serial.println(current_key_name, DEC);
+            break;
+          default:
+            // fall through
+            break;
+        } 
       }
     }
   }
