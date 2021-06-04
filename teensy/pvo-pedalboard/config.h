@@ -2,14 +2,14 @@
 #define CONFIG_H
 
 // Enable debugging
-#define ENABLE_DEBUGGING 1
-#define ENABLE_POT_DEBUGGING 1
+#define ENABLE_DEBUGGING 0
+#define ENABLE_POT_DEBUGGING 0
 
 // Some behaviors only make sense on Teensy
 #define IS_TEENSY 1
 
 // Output pedal channel
-#define MIDI_CHANNEL 4
+#define MIDI_CHANNEL 1
 
 // Velocity of note when pressed
 #define MIDI_VELOCITY 64
@@ -40,15 +40,33 @@
 
 #define LENGTH_POT_NUMBERS 4
 
+// The Yamaha FC7 pedal (when used in conjunction with a 220 ohm
+// resistor on the 3.3v VCC input to avoid shorting out when plugging
+// in the cable) has a sweep from 0 to 1018 (or 1019).
+#define MIN_POT_RESISTANCE 1
+// To make up for the sleep smoothing of the potentiometer reading code,
+// and to allow 100% to be reached when the pedal is pushed 99% of the way up
+// (to allow for some mechanical tolerances to shift), I put this as 1005 instead
+// of 1018
+#define MAX_POT_RESISTANCE 1005
+#define MAX_CC_VALUE 127
+
+/**
+ * Array of potentiometers. Items in each sub-array:
+ *  Pin number for analog read
+ *  Control Change # (I chose some CC numbers which are unused in the spec.)
+ */
 const unsigned char pot_numbers[LENGTH_POT_NUMBERS][2] = {
-  { 14, 0 }, // First pot
-  { 15, 1 },
-  { 16, 2 },
-  { 17, 3 }
+  { 14, 25 }, // First pot
+  { 15, 26 },
+  { 16, 27 },
+  { 17, 28 }
 };
 
-// Array of all the notes we will have.
-// Each will have its own pin and will generate the given midi number
+/**
+ * Array of all the notes we will have.
+ * Each will have its own pin and will generate the given midi number
+ */
 const unsigned char pin_notes[LENGTH_PIN_NOTES][2] = {
   // First 10 pins, down the upper left side of the board
   {  2, 36 }, // C2

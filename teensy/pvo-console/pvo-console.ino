@@ -11,10 +11,10 @@
 
 #include <MIDI.h>
 #include "config.h"
-#include "Keypad.h"
-#include <Metro.h>
+#include "PistonKeypad.h"
 
 //// Poll intervals
+//#include <Metro.h>
 //Metro midi_poll_interval = Metro(1);
 //Metro keypad_poll_interval = Metro(20);
 
@@ -37,7 +37,7 @@ HardwareSerialMidiInterface *midi_interfaces[LENGTH_MIDI_INTERFACES] = {
 };
 
 // Set up the keypad
-Keypad kpd = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
+PistonKeypad kpd = PistonKeypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS );
 
 // A variable to know how long the LED has been turned on
 elapsedMillis led_on_millis;
