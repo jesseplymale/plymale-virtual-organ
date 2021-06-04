@@ -1,3 +1,4 @@
+
 /* Create a "class compliant " USB to 3 MIDI IN and 3 MIDI OUT interface.
 
    MIDI receive (6N138 optocoupler) input circuit and series resistor
@@ -10,12 +11,12 @@
 
 #include <MIDI.h>
 #include "config.h"
-#include <Keypad.h>
+#include "Keypad.h"
 #include <Metro.h>
 
 //// Poll intervals
 //Metro midi_poll_interval = Metro(1);
-Metro keypad_poll_interval = Metro(20);
+//Metro keypad_poll_interval = Metro(20);
 
 typedef midi::MidiInterface<midi::SerialMIDI<HardwareSerial>> HardwareSerialMidiInterface;
 
@@ -61,7 +62,7 @@ void setup() {
   }
 
   // Configure the keypad
-  kpd.setDebounceTime(DEBOUNCE_INTERVAL_MILLIS*20);
+  kpd.setDebounceTime(DEBOUNCE_INTERVAL_MILLIS);
   kpd.setHoldTime(HOLD_INTERVAL_MILLIS);
 
   // Enable the MIDI serial ports 
@@ -203,9 +204,9 @@ int process_midi() {
 }
 
 void process_keypad2() {
-  if (keypad_poll_interval.check() != 1) {
-    return;
-  }
+//  if (keypad_poll_interval.check() != 1) {
+//    return;
+//  }
   char key = kpd.getKey();
   
   if (key != NO_KEY){
@@ -214,9 +215,9 @@ void process_keypad2() {
 }
 
 void process_keypad() {
-  if (keypad_poll_interval.check() != 1) {
-    return;
-  }
+//  if (keypad_poll_interval.check() != 1) {
+//    return;
+//  }
   
   // Fills kpd.key[ ] array with up-to LIST_MAX (currently 10) active keys.
   // Returns true if there are ANY active keys.
@@ -267,11 +268,11 @@ void process_keypad() {
  * Main program loop
  */
 void loop() {
-//  int is_activity = process_midi();
+  int is_activity = process_midi();
 
   process_keypad();
 
   if (ENABLE_DEBUGGING) {
-//    show_midi_activity(is_activity);
+    show_midi_activity(is_activity);
   }
 }

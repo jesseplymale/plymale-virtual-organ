@@ -3,6 +3,7 @@
 
 // Enable debugging
 #define ENABLE_DEBUGGING 1
+#define ENABLE_POT_DEBUGGING 1
 
 // Some behaviors only make sense on Teensy
 #define IS_TEENSY 1

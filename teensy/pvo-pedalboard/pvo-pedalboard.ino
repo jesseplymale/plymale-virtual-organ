@@ -41,6 +41,7 @@ void setup() {
   // This means the midi port can receive on all channels.
   // Doesn't make a difference since at this point we don't use any incoming data
   MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.turnThruOff();
 
   // Set up the LED, and have it not turned on at first
   pinMode(LED_PIN, OUTPUT);
@@ -73,7 +74,7 @@ void setup() {
     const unsigned char *pot_number = pot_numbers[i];
     unsigned char pot = pot_number[0];
     unsigned char number = pot_number[1];
-    if (ENABLE_DEBUGGING) {
+    if (ENABLE_POT_DEBUGGING) {
       Serial.print("Setting up pot=");
       Serial.print(pot);
       Serial.print(" with number=");
@@ -136,12 +137,15 @@ void handle_pots() {
     return;
   }
 
-  if (ENABLE_DEBUGGING) {
-    int val = analogRead(14);
-    Serial.print("Analog 14 is: ");
-    Serial.println(val);
+  if (ENABLE_POT_DEBUGGING) {
+    for (int i=14; i<=17; i++) {
+      int val = analogRead(i);
+      Serial.print("analogInput=");
+      Serial.print(i, DEC);
+      Serial.print(" value=");
+      Serial.println(val);
+    }
   }
-  
 }
 
 /**
