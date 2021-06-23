@@ -1,5 +1,11 @@
 # Running Ansible on the Raspberry Pi 4 8gb
 
+I set up a 8gb Raspberry Pi 4 to use as a development machine to code my Teensy microcontroller.
+
+I wanted to be able to set up another Raspberry Pi with the same setup, if needed. So I created an Ansible file which can be run on the Teensy to set it up.
+
+## Running Ansible
+
 ```bash
 # Get Python3 installed
 sudo apt install python3
